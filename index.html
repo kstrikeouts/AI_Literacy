@@ -81,12 +81,12 @@
                     <p class="text-stone-600 mb-8 leading-relaxed">이 섹션은 전체 보고서의 핵심 요약을 제공합니다. 현재 ATK가 직면한 AI 인프라의 양적, 질적 한계를 수치와 주요 메시지로 빠르게 파악할 수 있도록 구성되었습니다. 각 카드를 클릭하면 상세 분석 섹션으로 이동합니다.</p>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex flex-col cursor-pointer hover:shadow-md transition" onclick="switchView('license')">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex flex-col cursor-pointer hover:shadow-md transition" onclick="window.switchView('license')">
                             <span class="text-sm text-stone-500 font-semibold uppercase tracking-wider mb-1">Premium 보유</span>
                             <span class="text-4xl font-extrabold text-teal-700 mb-2">37<span class="text-lg text-stone-400 font-medium">명</span></span>
                             <p class="text-sm text-stone-600 mt-auto">전체 5,000명 중 단 0.74%. MS Champion 육성 및 전사 확산이 물리적으로 불가능한 수준.</p>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex flex-col cursor-pointer hover:shadow-md transition" onclick="switchView('comparison')">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex flex-col cursor-pointer hover:shadow-md transition" onclick="window.switchView('comparison')">
                             <span class="text-sm text-amber-600 font-semibold uppercase tracking-wider mb-1">E5의 한계</span>
                             <span class="text-xl font-bold text-stone-800 mb-2 leading-tight">업무 혁신 체감 불가</span>
                             <ul class="text-sm text-stone-600 mt-auto space-y-1 list-disc pl-4">
@@ -95,7 +95,7 @@
                                 <li>회의 자동 요약 미지원</li>
                             </ul>
                         </div>
-                        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex flex-col cursor-pointer hover:shadow-md transition" onclick="switchView('tools')">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex flex-col cursor-pointer hover:shadow-md transition" onclick="window.switchView('tools')">
                             <span class="text-sm text-rose-600 font-semibold uppercase tracking-wider mb-1">외부 도구 차단</span>
                             <span class="text-xl font-bold text-stone-800 mb-2 leading-tight">리터러시 정체 우려</span>
                             <p class="text-sm text-stone-600 mt-auto">최신 LLM, 바이브 코딩, 자동화 도구 접근 불가로 글로벌 AI 트렌드 반영 불가.</p>
@@ -169,7 +169,7 @@
                         </div>
                         <div class="bg-teal-50 p-5 rounded-lg border border-teal-100">
                             <h4 class="font-bold text-teal-800 mb-2">&#128736;&#65039; 혁신 도구 부재</h4>
-                            <p class="text-sm text-teal-600">Copilot Studio가 없어 부서별 맞춤 AI(Maker)를 만들 수 없고 단순 소비자(User)에 머뭅니다</p>
+                            <p class="text-sm text-teal-600">Copilot Studio가 없어 부서별 맞춤 AI(Maker)를 만들 수 없고 단순 소비자(User)에 머눕니다.</p>
                         </div>
                     </div>
                 </div>
@@ -256,7 +256,6 @@
                             </div>
                         </div>
 
-                        <!-- 추가된 항목 5번: 전문가 인사이트 반영 -->
                         <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                             <div class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-indigo-600 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 text-xl font-bold">5</div>
                             <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-xl shadow-sm border border-indigo-200 hover:border-indigo-500 transition cursor-default">
@@ -278,14 +277,12 @@
     </div>
 
     <script>
-        const navBtns = document.querySelectorAll('.nav-btn');
-        const sections = document.querySelectorAll('.view-section');
-        const sidebar = document.getElementById('sidebar');
-        const openMenuBtn = document.getElementById('openMenuBtn');
-        const closeMenuBtn = document.getElementById('closeMenuBtn');
-        let chartInstances = {};
+        // 전역 스코프로 함수 노출 (HTML onclick 속성에서 접근 가능하도록)
+        window.switchView = function(targetId) {
+            const navBtns = document.querySelectorAll('.nav-btn');
+            const sections = document.querySelectorAll('.view-section');
+            const sidebar = document.getElementById('sidebar');
 
-        function switchView(targetId) {
             navBtns.forEach(btn => {
                 if(btn.dataset.target === targetId) btn.classList.add('active');
                 else btn.classList.remove('active');
@@ -294,26 +291,21 @@
             sections.forEach(sec => {
                 if(sec.id === targetId) {
                     sec.classList.add('active');
-                    if(targetId === 'license' && !chartInstances.license) initLicenseChart();
-                    if(targetId === 'tools' && !chartInstances.radar) initRadarChart();
+                    // 섹션 전환 시 차트 초기화 (한 번만 실행되도록 체크)
+                    if(targetId === 'license' && !window.chartInstances.license) initLicenseChart();
+                    if(targetId === 'tools' && !window.chartInstances.radar) initRadarChart();
                 } else {
                     sec.classList.remove('active');
                 }
             });
 
-            if(window.innerWidth < 768) {
+            // 모바일에서 메뉴 클릭 시 사이드바 닫기
+            if(window.innerWidth < 768 && sidebar) {
                 sidebar.classList.add('-translate-x-full');
             }
-        }
+        };
 
-        navBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                switchView(e.currentTarget.dataset.target);
-            });
-        });
-
-        openMenuBtn.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
-        closeMenuBtn.addEventListener('click', () => sidebar.classList.add('-translate-x-full'));
+        window.chartInstances = {};
 
         const featureData = [
             { id: 'f1', name: '데이터 업로드/보안', e5: '로컬 파일 단순 업로드만 가능 (세션 종료 시 휘발성)', prem: 'SharePoint/OneDrive 전체 데이터 기반 (영구적 학습/참조)', impact: '사내 규정 등 "우리 회사 데이터" 기반 답변이 안 되면 임직원은 매력을 느끼지 못함.' },
@@ -326,7 +318,8 @@
 
         function initFeatureComparison() {
             const tabsContainer = document.getElementById('featureTabs');
-            
+            if(!tabsContainer) return;
+
             featureData.forEach((feat, index) => {
                 const btn = document.createElement('button');
                 btn.className = `feature-tab w-full text-left px-4 py-3 font-medium text-sm text-stone-600 border-b-2 border-transparent hover:bg-stone-100 focus:outline-none transition ${index === 0 ? 'active' : ''}`;
@@ -343,6 +336,7 @@
 
         function renderFeatureDetail(feat) {
             const detailContainer = document.getElementById('featureDetail');
+            if(!detailContainer) return;
             detailContainer.innerHTML = `
                 <h3 class="text-2xl font-bold text-stone-800 mb-6">${feat.name}</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -365,7 +359,7 @@
 
         const externalTools = [
             { id: 't1', icon: '&#128172;', cat: 'LLM', tools: 'Gemini, Claude, ChatGPT 등', e5: 'GPT 기반, Copilot Chat 성능 열위', diff: '경쟁하며 지속 업데이트되는 전문 LLM들 대비 성능 및 응답의 깊이가 부족함.' },
-            { id: 't2', icon: '&#128187;', cat: '바이브 코딩', tools: 'Cursor, Replit, Bolt.new','Claude Code',Gemini 등', e5: '코드 조각 단순 추천', diff: '단순 코드 제안을 넘어 실제 시스템, 웹, App 결과물을 전체적으로 구축하는 기능 상실.' },
+            { id: 't2', icon: '&#128187;', cat: '바이브 코딩', tools: 'Cursor, Replit, Bolt.new', e5: '코드 조각 단순 추천', diff: '단순 코드 제안을 넘어 실제 시스템, 웹, App 결과물을 전체적으로 구축하는 기능 상실.' },
             { id: 't3', icon: '&#9881;&#65039;', cat: '자동화', tools: 'n8n, Make', e5: '단순 문서 요약 수준', diff: '반복 업무를 실제 API로 연결하여 동작을 실행하는 진정한 RPA 대체 경험 불가.' },
             { id: 't4', icon: '&#128269;', cat: '리서치', tools: 'Perplexity, Manus', e5: '단순 웹 검색 기반 요약', diff: '브라우저를 직접 조작하며 심층 정보를 대행 수집하는 에이전트 경험 부재.' },
             { id: 't5', icon: '&#128200;', cat: '데이터', tools: 'Julius AI 등', e5: '엑셀 수식 작성 보조', diff: '수식을 넘어선 고급 데이터 모델링, 전문 통계 분석 및 시각화 기능 불가.' }
@@ -373,6 +367,7 @@
 
         function initToolsCards() {
             const container = document.getElementById('toolCards');
+            if(!container) return;
             externalTools.forEach((tool, index) => {
                 const card = document.createElement('div');
                 card.className = `tool-card bg-white p-4 rounded-lg border border-stone-200 text-center flex flex-col items-center ${index === 0 ? 'active' : ''}`;
@@ -392,6 +387,7 @@
 
         function renderToolDetail(tool) {
             const detail = document.getElementById('toolDetail');
+            if(!detail) return;
             detail.classList.remove('hidden');
             detail.innerHTML = `
                 <div class="flex items-center gap-3 mb-4">
@@ -415,8 +411,10 @@
         }
 
         function initLicenseChart() {
-            const ctx = document.getElementById('licenseChart').getContext('2d');
-            chartInstances.license = new Chart(ctx, {
+            const canvas = document.getElementById('licenseChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            window.chartInstances.license = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['보유자 (임원+실무)', '미보유자'],
@@ -466,8 +464,10 @@
         }
 
         function initRadarChart() {
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            chartInstances.radar = new Chart(ctx, {
+            const canvas = document.getElementById('radarChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            window.chartInstances.radar = new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: ['LLM 대화/추론', '바이브 코딩', '업무 자동화', '심층 리서치', '데이터 시각화'],
@@ -506,12 +506,29 @@
             });
         }
 
+        // 초기화 로직을 DOMContentLoaded 내로 통합
         document.addEventListener('DOMContentLoaded', () => {
+            const navBtns = document.querySelectorAll('.nav-btn');
+            const sidebar = document.getElementById('sidebar');
+            const openMenuBtn = document.getElementById('openMenuBtn');
+            const closeMenuBtn = document.getElementById('closeMenuBtn');
+
+            // 사이드바 메뉴 버튼 클릭 리스너 등록
+            navBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const target = e.currentTarget.dataset.target;
+                    window.switchView(target);
+                });
+            });
+
+            // 모바일 사이드바 토글
+            if(openMenuBtn) openMenuBtn.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
+            if(closeMenuBtn) closeMenuBtn.addEventListener('click', () => sidebar.classList.add('-translate-x-full'));
+
+            // 기타 컴포넌트 초기화
             initFeatureComparison();
             initToolsCards();
         });
     </script>
 </body>
 </html>
-
-
