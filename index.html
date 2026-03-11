@@ -105,7 +105,7 @@
                     <div class="bg-stone-800 text-stone-50 p-6 rounded-xl shadow-lg relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">&#10077;</div>
                         <h3 class="text-lg font-semibold text-amber-400 mb-2">핵심 결론</h3>
-                        <p class="text-lg leading-relaxed">현재의 일반 라이선스(E5) 및 내부 통제 환경만으로는 임직원이 실질적인 AI 비서의 가치를 체감하기 어렵습니다. <strong>Premium 라이선스의 효율적 재분배</strong>와 <strong>보안이 담보된 외부 전문 AI 도구(Enterprise)의 조건부 도입</strong>이 시급합니다.</p>
+                        <p class="text-lg leading-relaxed">현재의 일반 라이선스(E5) 및 내부 통제 환경만으로는 임직원이 실질적인 AI 비서의 가치를 체감하기 어렵습니다. <strong>Premium 라이선스의 효율적 재배포</strong>와 <strong>보안이 담보된 외부 전문 AI 도구(Enterprise)의 조건부 도입</strong>이 시급합니다.</p>
                     </div>
                 </div>
             </section>
@@ -278,11 +278,13 @@
 
     <script>
         // 전역 스코프로 함수 노출 (HTML onclick 속성에서 접근 가능하도록)
-        window.switchView = function(targetId) {
+        // pushHistory 매개변수를 추가하여 브라우저 뒤로가기 시 이중 기록 방지
+        window.switchView = function(targetId, pushHistory = true) {
             const navBtns = document.querySelectorAll('.nav-btn');
             const sections = document.querySelectorAll('.view-section');
             const sidebar = document.getElementById('sidebar');
 
+            // 1. UI 상태 업데이트
             navBtns.forEach(btn => {
                 if(btn.dataset.target === targetId) btn.classList.add('active');
                 else btn.classList.remove('active');
@@ -299,9 +301,28 @@
                 }
             });
 
-            // 모바일에서 메뉴 클릭 시 사이드바 닫기
+            // 2. 브라우저 히스토리 상태 업데이트 (해시 기반 내비게이션 지원)
+            if (pushHistory) {
+                const state = { targetId: targetId };
+                const url = '#' + targetId;
+                history.pushState(state, '', url);
+            }
+
+            // 3. 모바일에서 메뉴 클릭 시 사이드바 닫기
             if(window.innerWidth < 768 && sidebar) {
                 sidebar.classList.add('-translate-x-full');
+            }
+        };
+
+        // 브라우저 뒤로가기/앞으로가기 버튼 이벤트 리스너
+        window.onpopstate = function(event) {
+            if (event.state && event.state.targetId) {
+                // 히스토리 이동 시에는 pushHistory를 false로 전달
+                window.switchView(event.state.targetId, false);
+            } else {
+                // 해시가 있는 경우 해시 기반으로 이동, 없으면 기본값 dashboard
+                const hash = window.location.hash.replace('#', '') || 'dashboard';
+                window.switchView(hash, false);
             }
         };
 
@@ -524,6 +545,12 @@
             // 모바일 사이드바 토글
             if(openMenuBtn) openMenuBtn.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
             if(closeMenuBtn) closeMenuBtn.addEventListener('click', () => sidebar.classList.add('-translate-x-full'));
+
+            // 초기 상태 설정: 현재 URL의 해시가 있으면 해당 섹션으로 이동
+            const initialHash = window.location.hash.replace('#', '') || 'dashboard';
+            window.switchView(initialHash, false);
+            // 초기 상태를 history에 기록하여 뒤로가기 시 루트(대시보드)로 돌아올 수 있게 함
+            history.replaceState({ targetId: initialHash }, '', window.location.hash || '#dashboard');
 
             // 기타 컴포넌트 초기화
             initFeatureComparison();
